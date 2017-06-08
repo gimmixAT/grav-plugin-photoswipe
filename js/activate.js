@@ -3,12 +3,13 @@ $(document).ready( function() {
 	$("body").append(htmlElement);
 
 	var pswpElement = $(".pswp").get(0);
-	var items = [];
+	var currentItems = [];
+	var galleries = {};
 	var options = {
 		bgOpacity: 0.9,
 		history: false,
 		getThumbBoundsFn: function(index) {
-			var img = items[index].elem;
+			var img = currentItems[index].elem;
 			var o = img.offset();
 			if(img.hasClass('cropped')){
 				return {
@@ -34,37 +35,51 @@ $(document).ready( function() {
 			title: elem.attr("alt")
 		};
 
+		var li = $(this).parents('li[data-gallery]');
+		var id = 0;
+		var groupName = '_nogroup';
+		if (li.length > 0) {
+			groupName = li.attr('data-gallery');
+		}
+
+		galleries[groupName] = galleries[groupName] || [];
+		galleries[groupName].push(item);
+		id = galleries[groupName].length - 1;
+
 		if ( $(this).attr("data-size") ) {
 			var size = $(this).attr("data-size").split("x");
 			item.w = parseInt(size[0]);
 			item.h = parseInt(size[1]);
-			items.push(item);
-			var id = items.indexOf(item);
 			$(this).attr("lightbox-index", id);
 		} else {
 			// first add item without size parameters
-			items.push(item);
-			var id = items.indexOf(item);
 			$(this).attr("lightbox-index", id);
 
 			// get size asynchronously and add it later to the items array
 			var img = new Image();
 			img.src = item.src;
 			img.onload = function() {
-				items[id].w = img.naturalWidth;
-				items[id].h = img.naturalHeight;
+				galleries[groupName][id].w = img.naturalWidth;
+				galleries[groupName][id].h = img.naturalHeight;
 			}
 		}
 	}).on('click', function(e) {
 		var index = parseInt($(this).attr("lightbox-index"));
+		var li = $(this).parents('li[data-gallery]');
+		var id = 0;
+		var groupName = '_nogroup';
+		if (li.length > 0) {
+			groupName = li.attr('data-gallery');
+		}
+		currentItems = galleries[groupName];
 		var my_options = Object.assign({}, options, {
 			index: index
 		});
-		items[index].elem.css('opacity', 0);
+		currentItems[index].elem.css('opacity', 0);
 
-		var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, items, my_options);
+		var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, currentItems, my_options);
 		gallery.listen('destroy', function() { 
-			items[index].elem.css('opacity', 1);
+			currentItems[index].elem.css('opacity', 1);
 		});
 		gallery.init();
 		return false;

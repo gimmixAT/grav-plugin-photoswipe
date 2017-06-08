@@ -4,6 +4,7 @@ namespace Grav\Plugin;
 use \Grav\Common\Plugin;
 use \Grav\Common\Grav;
 use \Grav\Common\Page\Page;
+use \RocketTheme\Toolbox\Event\Event;
 
 class PhotoswipePlugin extends Plugin
 {
@@ -32,6 +33,12 @@ class PhotoswipePlugin extends Plugin
         $this->enable([
             'onPageInitialized' => ['onPageInitialized', 0]
         ]);
+
+		if ($this->config->get('system.pages.markdown.extra')) {
+			$this->enable([
+				'onMarkdownInitialized' => ['onMarkdownInitialized', 0],
+			]);
+		}
     }
 
     /**
@@ -71,4 +78,37 @@ class PhotoswipePlugin extends Plugin
              ->addJs('plugin://photoswipe/external/dist/photoswipe-ui-default.min.js')
              ->addJs('plugin://photoswipe/js/activate.js');
     }
+	
+	/**
+	 * add markdown to register lists of images as gallery
+	 */
+	public function onMarkdownInitialized(Event $event)
+	{
+		$markdown = $event['markdown'];
+		
+		$markdown->addBlockType('*', 'ListExtended', true, false, 1);
+		
+		function handleListBlock ($Block) {
+			if (preg_match('/^[ ]*(!.*)$/', $Block['li']['text'][0], $matches, PREG_OFFSET_CAPTURE))
+			{
+				$Block['element']['attributes']['class'] = 'pswp-gallery';
+				$Block['li']['attributes']['data-gallery'] = $Block['element']['id'];
+			}
+			return $Block;
+		}
+		
+		$listExtended = function($Line) {
+			$Block = parent::blockList($Line);
+			$Block['element']['id'] = uniqid('pswp_', true);
+			return handleListBlock($Block);
+		};
+
+		$listExtendedContinue = function($Line, array $Block) {
+			$Block = parent::blockListContinue($Line, $Block);
+			return handleListBlock($Block);;
+		};
+
+		$markdown->blockListExtended = $listExtended->bindTo($markdown, $markdown);
+		$markdown->blockListExtendedContinue = $listExtendedContinue->bindTo($markdown, $markdown);
+	}
 }
