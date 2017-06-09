@@ -87,15 +87,17 @@ class PhotoswipePlugin extends Plugin
 		$markdown = $event['markdown'];
 		
 		$markdown->addBlockType('*', 'ListExtended', true, false, 1);
-				
+		
 		$listExtended = function($Line) {
 			$Block = parent::blockList($Line);
+			if($Block == null) return $Block;
 			$Block['element']['id'] = uniqid('pswp_', true);
 			return PhotoswipePlugin::handleListBlock($Block);
 		};
 
 		$listExtendedContinue = function($Line, array $Block) {
 			$Block = parent::blockListContinue($Line, $Block);
+			if($Block == null) return $Block;
 			return PhotoswipePlugin::handleListBlock($Block);
 		};
 
@@ -104,7 +106,6 @@ class PhotoswipePlugin extends Plugin
 	}
 	
 	public static function handleListBlock($Block) {
-		
 		if(!isset($Block['li'])) return $Block;
 		if (preg_match('/^[ ]*(!.*)$/', $Block['li']['text'][0], $matches, PREG_OFFSET_CAPTURE))
 		{
