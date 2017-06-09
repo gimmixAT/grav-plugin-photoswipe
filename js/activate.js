@@ -79,7 +79,16 @@ $(document).ready( function() {
 
 		var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, currentItems, my_options);
 		gallery.listen('destroy', function() { 
-			currentItems[index].elem.css('opacity', 1);
+			currentItems[gallery.getCurrentIndex()].elem.css('opacity', 1);
+		});
+		gallery.listen('beforeChange', function(diff) {
+			if (diff) {
+				console.log('before', gallery.getCurrentIndex(), diff);
+				currentItems[gallery.getCurrentIndex()].elem.css('opacity', 0);
+				var before = gallery.getCurrentIndex() - diff;
+				before = before < 0 ? currentItems.length + before : before > currentItems.length - 1 ? currentItems.length - before : before;
+				currentItems[before].elem.css('opacity', 1);
+			}
 		});
 		gallery.init();
 		return false;
