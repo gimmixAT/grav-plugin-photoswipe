@@ -37,14 +37,14 @@ $(document).ready( function() {
 
 		var li = $(this).parents('li[data-gallery]');
 		var id = 0;
-		var groupName = '_nogroup';
+		var galleryName = '_nogroup';
 		if (li.length > 0) {
-			groupName = li.attr('data-gallery');
+			galleryName = li.attr('data-gallery');
 		}
 
-		galleries[groupName] = galleries[groupName] || [];
-		galleries[groupName].push(item);
-		id = galleries[groupName].length - 1;
+		galleries[galleryName] = galleries[galleryName] || [];
+		galleries[galleryName].push(item);
+		id = galleries[galleryName].length - 1;
 
 		if ( $(this).attr("data-size") ) {
 			var size = $(this).attr("data-size").split("x");
@@ -59,19 +59,19 @@ $(document).ready( function() {
 			var img = new Image();
 			img.src = item.src;
 			img.onload = function() {
-				galleries[groupName][id].w = img.naturalWidth;
-				galleries[groupName][id].h = img.naturalHeight;
+				galleries[galleryName][id].w = img.naturalWidth;
+				galleries[galleryName][id].h = img.naturalHeight;
 			}
 		}
 	}).on('click', function(e) {
 		var index = parseInt($(this).attr("lightbox-index"));
 		var li = $(this).parents('li[data-gallery]');
 		var id = 0;
-		var groupName = '_nogroup';
+		var galleryName = '_nogroup';
 		if (li.length > 0) {
-			groupName = li.attr('data-gallery');
+			galleryName = li.attr('data-gallery');
 		}
-		currentItems = galleries[groupName];
+		currentItems = galleries[galleryName];
 		var my_options = Object.assign({}, options, {
 			index: index
 		});
