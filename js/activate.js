@@ -10,6 +10,7 @@ $(document).ready( function() {
 		history: false,
 		getThumbBoundsFn: function(index) {
 			var img = currentItems[index].elem;
+
 			var o = img.offset();
 			if(img.hasClass('cropped')){
 				return {
@@ -24,7 +25,12 @@ $(document).ready( function() {
 					w: img.width()
 				};
 			}
-		}
+		},
+		shareButtons: [
+			{id:'facebook', label:'Share on Facebook', url:'https://www.facebook.com/sharer/sharer.php?u={{url}}'},
+			{id:'twitter', label:'Tweet', url:'https://twitter.com/intent/tweet?text={{text}}&url={{url}}'},
+			{id:'pinterest', label:'Pin it', url:'http://www.pinterest.com/pin/create/button/?url={{url}}&media={{image_url}}&description={{text}}'},
+		]
 	};
 
 	$("a[rel='lightbox']").each( function() {
@@ -41,33 +47,55 @@ $(document).ready( function() {
 		if (li.length > 0) {
 			galleryName = li.attr('data-gallery');
 		}
-
-		galleries[galleryName] = galleries[galleryName] || [];
-		galleries[galleryName].push(item);
-		id = galleries[galleryName].length - 1;
-
-		if ( $(this).attr("data-size") ) {
-			var size = $(this).attr("data-size").split("x");
-			item.w = parseInt(size[0]);
-			item.h = parseInt(size[1]);
-			$(this).attr("lightbox-index", id);
+		
+		var images = $(this).attr('data-images');
+		if (images) {
+			galleryName = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+				var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+				return v.toString(16);
+			});
+			galleries[galleryName] = images.split(':').slice(0, -1).map(function(src, index) {
+				var img = new Image();
+				img.src = src;
+				img.onload = function() {
+					galleries[galleryName][index].w = img.naturalWidth;
+					galleries[galleryName][index].h = img.naturalHeight;
+				}
+				
+				return {
+					w: 0,
+					h: 0,
+					src: src,
+					elem: elem
+				}
+			});
+			$(this).attr('data-gallery', galleryName);
 		} else {
-			// first add item without size parameters
+			galleries[galleryName] = galleries[galleryName] || [];
+			galleries[galleryName].push(item);
+			
+			id = galleries[galleryName].length - 1;
 			$(this).attr("lightbox-index", id);
-
-			// get size asynchronously and add it later to the items array
-			var img = new Image();
-			img.src = item.src;
-			img.onload = function() {
-				galleries[galleryName][id].w = img.naturalWidth;
-				galleries[galleryName][id].h = img.naturalHeight;
+			
+			if ( $(this).attr("data-size") ) {
+				var size = $(this).attr("data-size").split("x");
+				item.w = parseInt(size[0]);
+				item.h = parseInt(size[1]);
+			} else {
+				// get size asynchronously and add it later to the items array
+				var img = new Image();
+				img.src = item.src;
+				img.onload = function() {
+					galleries[galleryName][id].w = img.naturalWidth;
+					galleries[galleryName][id].h = img.naturalHeight;
+				}
 			}
 		}
 	}).on('click', function(e) {
-		var index = parseInt($(this).attr("lightbox-index"));
+		var index = parseInt($(this).attr("lightbox-index")) || 0;
 		var li = $(this).parents('li[data-gallery]');
 		var id = 0;
-		var galleryName = '_nogroup';
+		var galleryName = $(this).attr('data-gallery') || '_nogroup';
 		if (li.length > 0) {
 			galleryName = li.attr('data-gallery');
 		}
@@ -83,7 +111,6 @@ $(document).ready( function() {
 		});
 		gallery.listen('beforeChange', function(diff) {
 			if (diff) {
-				console.log('before', gallery.getCurrentIndex(), diff);
 				currentItems[gallery.getCurrentIndex()].elem.css('opacity', 0);
 				var before = gallery.getCurrentIndex() - diff;
 				before = before < 0 ? currentItems.length + before : before > currentItems.length - 1 ? currentItems.length - before : before;
