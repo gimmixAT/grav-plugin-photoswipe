@@ -35,10 +35,11 @@ $(document).ready( function() {
 
 	$("a[rel='lightbox']").each( function() {
 		var elem = $(this).find("img");
+		elem = elem.length ? elem : $(this);
 		var item = {
 			elem: elem,
 			src: $(this).attr("href"),
-			title: elem.attr("alt")
+			title: elem.attr("alt") || elem.attr("title")
 		};
 
 		var li = $(this).parents('li[data-gallery]');
@@ -103,7 +104,9 @@ $(document).ready( function() {
 		var my_options = Object.assign({}, options, {
 			index: index
 		});
-		currentItems[index].elem.css('opacity', 0);
+		if (!currentItems[index].elem.hasClass('cropped')) {
+			currentItems[index].elem.css('opacity', 0);
+		}
 
 		var gallery = new PhotoSwipe( pswpElement, PhotoSwipeUI_Default, currentItems, my_options);
 		gallery.listen('destroy', function() { 
@@ -111,7 +114,9 @@ $(document).ready( function() {
 		});
 		gallery.listen('beforeChange', function(diff) {
 			if (diff) {
-				currentItems[gallery.getCurrentIndex()].elem.css('opacity', 0);
+				if (!currentItems[gallery.getCurrentIndex()].elem.hasClass('cropped')) {
+					currentItems[gallery.getCurrentIndex()].elem.css('opacity', 0);
+				}
 				var before = gallery.getCurrentIndex() - diff;
 				before = before < 0 ? currentItems.length + before : before > currentItems.length - 1 ? currentItems.length - before : before;
 				currentItems[before].elem.css('opacity', 1);
