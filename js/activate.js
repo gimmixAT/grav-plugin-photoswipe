@@ -112,6 +112,11 @@ $(document).ready( function() {
 			currentItems[gallery.getCurrentIndex()].elem.css('opacity', 1);
 		});
 		gallery.listen('beforeChange', function(diff) {
+			if(!expected) {
+				cancelled = true;
+				clearTimeout(slideTimeout);
+			}
+			expected = false;
 			if (diff) {
 				if (!currentItems[gallery.getCurrentIndex()].elem.hasClass('cropped')) {
 					currentItems[gallery.getCurrentIndex()].elem.css('opacity', 0);
@@ -121,7 +126,40 @@ $(document).ready( function() {
 				currentItems[before].elem.css('opacity', 1);
 			}
 		});
+		gallery.listen('afterChange', function(diff) {
+			if(!gallery.currItem || !gallery.currItem.loaded){
+				clearTimeout(slideTimeout);
+			} else {
+				waitAndSlide();
+			}
+		});
+		gallery.listen('close', function() {
+			clearTimeout(slideTimeout);
+		});
+		gallery.listen('imageLoadComplete', function() {
+			waitAndSlide();
+		});
 		gallery.init();
+		
+		gallery.framework.bind( gallery.scrollWrap, 'pswpTap', function(e) {
+			clearTimeout(slideTimeout);
+		});
+
+		
+		var slideTimeout;
+		var cancelled = false;
+		var expected = false;
+		function waitAndSlide() {
+			clearTimeout(slideTimeout);
+			if(cancelled) return;
+			slideTimeout = setTimeout(function() {
+				expected = true;
+				gallery.next();
+			}, 5000);
+		}
+		
+		waitAndSlide();
+		
 		return false;
 	});
 });
