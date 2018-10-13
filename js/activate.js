@@ -131,7 +131,7 @@ $(document).ready( function() {
 		});
 		gallery.listen('afterChange', function(diff) {
 			var nHref = href.concat();
-			nHref.splice(-1, 0, 'image:' + md5(gallery.currItem.src.split('/').slice(-1)[0]))
+			nHref.push('image:' + md5(gallery.currItem.src.split('/').slice(-1)[0]))
 			window.history.replaceState({}, document.title, nHref.join('/'));
 			if(!gallery.currItem || !gallery.currItem.loaded){
 				clearTimeout(slideTimeout);
