@@ -76,8 +76,9 @@ $(document).ready( function() {
 			id = galleries[galleryName].length - 1;
 			$(this).attr("lightbox-index", id);
 			
-			if ( $(this).attr("data-size") ) {
-				var size = $(this).attr("data-size").split("x");
+			var size = $(this).attr("data-size") || li.attr("data-size");
+			if ( size ) {
+				size = size.split("x");
 				item.w = parseInt(size[0]);
 				item.h = parseInt(size[1]);
 			} else {

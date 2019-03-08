@@ -92,27 +92,31 @@ class PhotoswipePlugin extends Plugin
 			$Block = parent::blockList($Line);
 			if($Block == null) return $Block;
 			$Block['element']['id'] = uniqid('pswp_', true);
-			return PhotoswipePlugin::handleListBlock($Block);
+			return PhotoswipePlugin::handleListBlock($Block, $this->page);
 		};
 
 		$listExtendedContinue = function($Line, array $Block) {
 			$Block = parent::blockListContinue($Line, $Block);
 			if($Block == null) return $Block;
-			return PhotoswipePlugin::handleListBlock($Block);
+			return PhotoswipePlugin::handleListBlock($Block, $this->page);
 		};
 
 		$markdown->blockListExtended = $listExtended->bindTo($markdown, $markdown);
 		$markdown->blockListExtendedContinue = $listExtendedContinue->bindTo($markdown, $markdown);
 	}
 	
-	public static function handleListBlock($Block) {
+	public static function handleListBlock($Block, $Page) {
 		if(!isset($Block['li'])) return $Block;
 		if (preg_match('/^[ ]*(!.*)$/', $Block['li']['text'][0], $matches, PREG_OFFSET_CAPTURE))
 		{
 			$Block['element']['attributes']['class'] = 'pswp-gallery';
 			$Block['li']['attributes']['data-gallery'] = $Block['element']['id'];
-			if(preg_match('/\[([^\]]+)\]/', $Block['li']['text'][0], $titleMatch)){
+			if(preg_match('/\[([^\]]+)\]\(([^\)?]+).*?\)/', $Block['li']['text'][0], $titleMatch)){
 				$Block['li']['attributes']['title'] = $titleMatch[1];
+				$image = $Page->media()->images()[urldecode($titleMatch[2])];
+				if (!empty($image)) {
+					$Block['li']['attributes']['data-size'] = $image->width.'x'.$image->height;
+				}
 			}
 		}
 		return $Block;
