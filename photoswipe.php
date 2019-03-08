@@ -111,8 +111,10 @@ class PhotoswipePlugin extends Plugin
 		{
 			$Block['element']['attributes']['class'] = 'pswp-gallery';
 			$Block['li']['attributes']['data-gallery'] = $Block['element']['id'];
-			if(preg_match('/\[([^\]]+)\]\(([^\)?]+).*?\)/', $Block['li']['text'][0], $titleMatch)){
-				$Block['li']['attributes']['title'] = $titleMatch[1];
+			if(preg_match('/\[([^\]]*)\]\(([^\)?]+).*?\)/', $Block['li']['text'][0], $titleMatch)){
+				if(!empty($titleMatch[1])) {
+					$Block['li']['attributes']['title'] = $titleMatch[1];
+				}
 				$image = $Page->media()->images()[urldecode($titleMatch[2])];
 				if (!empty($image)) {
 					$Block['li']['attributes']['data-size'] = $image->width.'x'.$image->height;
