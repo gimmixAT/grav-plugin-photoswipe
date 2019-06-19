@@ -33,6 +33,9 @@ $(document).ready( function() {
 		]
 	};
 
+	var imgSplit = window.location.href.split('/image:');
+	var requestedImage = imgSplit.length > 1 ? imgSplit[1] : null;
+
 	$("a[rel='lightbox']").each( function() {
 		var elem = $(this).find("img");
 		elem = elem.length ? elem : $(this);
@@ -92,6 +95,13 @@ $(document).ready( function() {
 			}
 		}
 		$(this).attr('data-gallery', galleryName);
+		
+		if (requestedImage && requestedImage === md5(item.src.split('/').slice(-1)[0])) {
+			$this = $(this);
+			setTimeout(function() {
+				$this.trigger('click');
+			}, 33);
+		}
 	}).on('click', function(e) {
 		var index = parseInt($(this).attr("lightbox-index")) || 0;
 		var li = $(this).parents('li[data-gallery]');
