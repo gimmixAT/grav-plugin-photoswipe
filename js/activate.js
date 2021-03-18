@@ -35,14 +35,18 @@ $(document).ready( function() {
 
 	var imgSplit = window.location.href.split('/image:');
 	var requestedImage = imgSplit.length > 1 ? imgSplit[1] : null;
+	var lang = document.getElementsByTagName('html')[0].getAttribute('lang');
 
 	$("a[rel='lightbox']").each( function() {
 		var elem = $(this).find("img");
 		elem = elem.length ? elem : $(this);
+		var artriumId = $(this).find('img').attr('src').match(/artrium=([0-9]+)/);
+		var shopButton = artriumId ? ' <div><a href="https://artriumonline.com/item.php?id=' + artriumId[1] + '" target="_blank">Item on ARTRIUM Online</a></div>' : '';
 		var item = {
 			elem: elem,
 			src: $(this).attr("href"),
-			title: elem.attr("alt") || elem.attr("title")
+			name: $(this).attr("data-name"),
+			title: (elem.attr("alt") || elem.attr("title") || '') + shopButton
 		};
 
 		var li = $(this).parents('li[data-gallery]');
@@ -96,7 +100,13 @@ $(document).ready( function() {
 		}
 		$(this).attr('data-gallery', galleryName);
 		
-		if (requestedImage && requestedImage === md5(item.src.split('/').slice(-1)[0])) {
+		if (
+			requestedImage && 
+			(
+				requestedImage === md5(item.src.split('/').slice(-1)[0]) || 
+				requestedImage === item.name
+			)
+		) {
 			$this = $(this);
 			setTimeout(function() {
 				$this.trigger('click');
